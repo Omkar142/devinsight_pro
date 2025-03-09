@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevInsight Pro</title>
+    <style>
+        :root {
+            --primary: #6200ee;
+            --primary-dark: #3700b3;
+            --secondary: #03dac6;
+            --background: #121212;
+            --surface: #1e1e1e;
+            --surface-variant: #2d2d2d;
+            --on-surface: #e0e0e0;
+            --on-surface-medium: rgba(224, 224, 224, 0.87);
+            --on-surface-light: rgba(224, 224, 224, 0.6);
+            --error: #cf6679;
+            --success: #03dac5;
+            --warning: #ff9800;
+            --info: #2196f3;
+            --shadow: rgba(0, 0, 0, 0.2);
+            --shadow-lg: rgba(0, 0, 0, 0.4);
+        }
+
+        body.light-mode {
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --surface-variant: #e2e8f0;
+            --on-surface: #0f172a;
+            --on-surface-medium: #475569;
+            --on-surface-light: #64748b;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --shadow-lg: rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to bottom, var(--background), var(--surface));
+            color: var(--on-surface);
+            transition: background 0.3s, color 0.3s;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--surface);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 8px var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--secondary); }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--secondary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--background);
+            font-weight: bold;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        nav a {
+            color: var(--on-surface-medium);
+            text-decoration: none;
+            font-size: 0.9375rem;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+
+        nav a:hover { color: var(--on-surface); }
+        nav a.active { color: var(--secondary); }
+
+        .search-bar {
+            background: var(--surface-variant);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+            margin: 0 1rem;
+        }
+
+        .search-bar input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--on-surface);
+            width: 100%;
+            font-size: 0.875rem;
+        }
+
+        .search-icon {
+            margin-right: 0.5rem;
+            opacity: 0.7;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1rem;
+            padding: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .tile {
+            background: var(--surface);
+            border-radius: 10px;
+            padding: 1rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            min-height: 250px;
+            max-height: 400px; /* Cap height for scroll */
+        }
+
+        .tile:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px var(--shadow-lg);
+        }
+
+        .tile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .tile-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--on-surface);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tile-actions {
+            opacity: 0.7;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tile-actions:hover { opacity: 1; }
+
+        .salary-breakout { grid-column: span 6; grid-row: span 2; }
+        .tech-stack { grid-column: span 3; grid-row: span 2; }
+        .compensation { grid-column: span 3; grid-row: span 2; }
+        .interview-experiences { grid-column: span 6; grid-row: span 2; }
+        .tech-news { grid-column: span 3; grid-row: span 2; }
+        .hiring-now { grid-column: span 3; grid-row: span 2; }
+        .reddit-discussions { grid-column: span 3; grid-row: span 4; }
+        .company-worklife { grid-column: span 9; grid-row: span 2; }
+
+        .list-content, .tile-content {
+            font-size: 0.875rem;
+            color: var(--on-surface);
+            max-height: 300px; /* Scrollable height */
+            overflow-y: auto; /* Enable vertical scroll */
+            scrollbar-width: thin;
+            scrollbar-color: var(--secondary) var(--surface);
+        }
+
+        .list-content::-webkit-scrollbar, .tile-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .list-content::-webkit-scrollbar-thumb, .tile-content::-webkit-scrollbar-thumb {
+            background: var(--secondary);
+            border-radius: 4px;
+        }
+
+        .list-content::-webkit-scrollbar-track, .tile-content::-webkit-scrollbar-track {
+            background: var(--surface);
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .list-item:hover {
+            background: var(--surface-variant);
+        }
+
+        .list-item:last-child { border-bottom: none; }
+
+        .list-label {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .list-label a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .list-label a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        .micro-bar {
+            width: 100px;
+            height: 6px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+            margin-left: 0.5rem;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .micro-bar:hover {
+            box-shadow: 0 0 5px var(--secondary);
+        }
+
+        .micro-bar-fill {
+            height: 100%;
+            background: inherit;
+            transition: width 0.5s ease;
+        }
+
+        .list-value {
+            margin-left: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--on-surface-medium);
+        }
+
+        .tile-item {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .tile-item:hover {
+            background: var(--surface-variant);
+        }
+
+        .tile-item:last-child { border-bottom: none; }
+
+        .tile-item a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .tile-item a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--success);
+            margin-left: 0.5rem;
+        }
+
+        .live-indicator::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            margin-right: 0.25rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .refresh-icon {
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .refresh-icon:hover { transform: rotate(180deg); }
+
+        @media (max-width: 1024px) {
+            .dashboard { grid-template-columns: repeat(8, 1fr); }
+            .salary-breakout, .interview-experiences, .company-worklife { grid-column: span 8; grid-row: span 2; }
+            .tech-stack, .compensation, .tech-news, .hiring-now { grid-column: span 4; grid-row: span 2; }
+            .reddit-discussions { grid-column: span 4; grid-row: span 4; }
+            .search-bar { width: 200px; margin: 0 0.5rem; }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard { grid-template-columns: repeat(4, 1fr); padding: 1rem; }
+            .salary-breakout, .tech-stack, .compensation, .interview-experiences, .tech-news, .hiring-now, .reddit-discussions, .company-worklife {
+                grid-column: span 4;
+                grid-row: auto;
+            }
+            header { flex-direction: column; gap: 0.5rem; }
+            .search-bar { width: 100%; margin: 0; }
+            nav { flex-wrap: wrap; justify-content: center; }
+            .micro-bar { width: 80px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <div class="logo-icon">D</div>
+            DevInsight <span>Pro</span>
+        </div>
+        <div class="search-bar">
+            <div class="search-icon">🔍</div>
+            <input type="text" id="search-input" placeholder="Search companies, skills, or topics...">
+        </div>
+        <nav>
+            <a href="#" class="active" data-page="dashboard">Dashboard</a>
+            <a href="#" data-page="companies">Companies</a>
+            <a href="#" data-page="interviews">Interviews</a>
+            <a href="#" data-page="salaries">Salaries</a>
+            <a href="#" data-page="community">Community</a>
+            <a href="#" data-page="profile">My Profile</a>
+            <button id="theme-toggle">🌙</button>
+            <div class="tooltip" style="position: relative;">
+                <span id="notifications-icon" style="cursor: pointer;">🔔</span>
+                <span class="notification-badge">3</span>
+                <span class="tooltiptext">Notifications</span>
+            </div>
+        </nav>
+    </header>
+
+    <div id="notifications"></div>
+
+    <div class="dashboard" id="dashboard-container">
+        <!-- Salary Breakout & Comparison -->
+        <div class="tile salary-breakout">
+            <div class="tile-header">
+                <div class="tile-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                    Salary Breakout & Comparison
+                </div>
+                <div class="tile-actions">
+                    <div class="refresh-icon" id="refresh-salary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6M1 20v-6h6"></path>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="list-content" id="salary-content"></div>
+        </div>
+
+        <!-- Tech Stack Trends -->
+        <div class="tile tech-stack">
+            <div class="tile-header">
+                <div class="tile-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M3.51 15a9 9 0 1 0 17.98-3"></path>
+                    </svg>
+                    Tech Stack Trends
+                </div>
+                <div class="tile-actions">
+                    <div class="refresh-icon" id="refresh-tech">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6M1 20v-6h6"></path>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="list-content" id="tech-content"></div>
+        </div>
+
+        <!-- Compensation Benchmarking -->
+        <div class="tile compensation">
+            <div class="tile-header">
+                <div class="tile-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                    Compensation Benchmarking
+                </div>
+                <div class="tile-actions">
+                    <div class="refresh-icon" id="refresh-comp">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6M1 20v-6h6"></path>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="tile-content" id="comp-content"></div>
+        </div>
+
+        <!-- Recent Interview Experiences -->
+        <div class="tile interview-experiences">
+            <div class="tile-header">
+                <div class="tile-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                    </svg>
+                    Recent Interview Experiences
+                </div>
+                <div class="tile-actions">
+                    <div class="refresh-icon" id="refresh-interviews">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6M1 20v-6h6"></path>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="tile-content" id="interview-content"></div>
+        </div>
+
+        <!-- Tech News -->
+        <div class="tile tech-news">
+            <div class="tile-header">
+                <div class="tile-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 8v4l3 3"></path>
+                        <circle cx="12" cy="12" r="10"></circle>
+                    </svg>
+                    Tech News <span class="live-indicator">LIVE</span>
+                </div>
+                <div class="tile-actions">
+                    <div class="refresh-icon" id="refresh-news">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6M1 20v-6h6"></path>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="tile-content" id="news-content"></div>
+        </div>
+
+        <!-- Hiring Now -->
+        <div class="tile hiring-now">
+            <div class="tile-header">
+                <div class="tile-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"KILL stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Hiring Now <span class="live-indicator">LIVE</span>
+                </div>
+                <div class="tile-actions">
+                    <div class="refresh-icon" id="refresh-hiring">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6M1 20v-6h6"></path>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="tile-content" id="hiring-content"></div>
+        </div>
+
+        <!-- Reddit Hot Discussions -->
+        <div class="tile reddit-discussions">
+            <div class="tile-header">
+                <div class="tile-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                    </svg>
+                    Reddit Hot Discussions <span class="live-indicator">LIVE</span>
+                </div>
+                <div class="tile-actions">
+                    <div class="refresh-icon" id="refresh-discussions">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6M1 20v-6h6"></path>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="tile-content" id="discussions-content"></div>
+        </div>
+
+        <!-- Company Worklife -->
+        <div class="tile company-worklife">
+            <div class="tile-header">
+                <div class="tile-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                    </svg>
+                    Company Worklife
+                </div>
+                <div class="tile-actions">
+                    <div class="refresh-icon" id="refresh-companies">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6M1 20v-6h6"></path>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="tile-content" id="company-content"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Beefed-up data with new sites
+            const salaryData = [
+                { label: "Google SWE L5", url: "https://kuutsav.github.io/leetcode-compensation/", value: 350 },
+                { label: "Amazon SDE II", url: "https://kuutsav.github.io/leetcode-compensation/", value: 190 },
+                { label: "Meta E4", url: "https://kuutsav.github.io/leetcode-compensation/", value: 220 },
+                { label: "Netflix Senior SWE", url: "https://kuutsav.github.io/leetcode-compensation/", value: 400 },
+                { label: "Microsoft L63", url: "https://kuutsav.github.io/leetcode-compensation/", value: 280 },
+                { label: "Apple ICT4", url: "https://kuutsav.github.io/leetcode-compensation/", value: 310 },
+                { label: "Uber L5A", url: "https://kuutsav.github.io/leetcode-compensation/", value: 260 },
+                { label: "Stripe L3", url: "https://kuutsav.github.io/leetcode-compensation/", value: 320 },
+                { label: "Airbnb L5", url: "https://kuutsav.github.io/leetcode-compensation/", value: 290 },
+                { label: "Databricks L4", url: "https://kuutsav.github.io/leetcode-compensation/", value: 340 }
+            ];
+
+            const techData = [
+                { label: "Python", url: "https://stackoverflow.com/tags/python", value: 90 },
+                { label: "JavaScript", url: "https://stackoverflow.com/tags/javascript", value: 85 },
+                { label: "TypeScript", url: "https://stackoverflow.com/tags/typescript", value: 70 },
+                { label: "Rust", url: "https://stackoverflow.com/tags/rust", value: 50 },
+                { label: "Java", url: "https://stackoverflow.com/tags/java", value: 65 },
+                { label: "Go", url: "https://stackoverflow.com/tags/go", value: 60 },
+                { label: "C++", url: "https://stackoverflow.com/tags/c++", value: 55 },
+                { label: "Kotlin", url: "https://stackoverflow.com/tags/kotlin", value: 45 },
+                { label: "Swift", url: "https://stackoverflow.com/tags/swift", value: 40 },
+                { label: "Ruby", url: "https://stackoverflow.com/tags/ruby", value: 35 }
+            ];
+
+            const compData = [
+                { label: "Google L5", url: "https://kuutsav.github.io/leetcode-compensation/", text: "$350k" },
+                { label: "Meta E4", url: "https://kuutsav.github.io/leetcode-compensation/", text: "$220k" },
+                { label: "Amazon L6", url: "https://kuutsav.github.io/leetcode-compensation/", text: "$300k" },
+                { label: "Netflix L5", url: "https://kuutsav.github.io/leetcode-compensation/", text: "$400k" },
+                { label: "Microsoft L62", url: "https://kuutsav.github.io/leetcode-compensation/", text: "$260k" },
+                { label: "Apple ICT3", url: "https://kuutsav.github.io/leetcode-compensation/", text: "$280k" },
+                { label: "Uber L5", url: "https://kuutsav.github.io/leetcode-compensation/", text: "$250k" },
+                { label: "Stripe L2", url: "https://kuutsav.github.io/leetcode-compensation/", text: "$290k" },
+                { label: "Airbnb L4", url: "https://kuutsav.github.io/leetcode-compensation/", text: "$270k" },
+                { label: "Databricks L3", url: "https://kuutsav.github.io/leetcode-compensation/", text: "$310k" }
+            ];
+
+            const interviewData = [
+                { label: "Google SWE L5", url: "https://leetcode.com/discuss/", text: "3 coding rounds" },
+                { label: "Amazon SDE II", url: "https://leetcode.com/discuss/", text: "Behavioral + 2 mediums" },
+                { label: "Meta E4 PM", url: "https://leetcode.com/discuss/", text: "Product design focus" },
+                { label: "Netflix SWE", url: "https://leetcode.com/discuss/", text: "System design heavy" },
+                { label: "Microsoft L62", url: "https://leetcode.com/discuss/", text: "2 LC hards" },
+                { label: "Apple ICT3", url: "https://leetcode.com/discuss/", text: "Behavioral + coding" },
+                { label: "Uber L5", url: "https://leetcode.com/discuss/", text: "1 system, 2 coding" },
+                { label: "Stripe L2", url: "https://leetcode.com/discuss/", text: "Algorithm focus" },
+                { label: "Airbnb L4", url: "https://leetcode.com/discuss/", text: "Frontend + backend" },
+                { label: "Databricks L3", url: "https://leetcode.com/discuss/", text: "Data pipeline Qs" }
+            ];
+
+            const newsData = [
+                { label: "Google Layoffs 2023", url: "https://techcrunch.com", text: "12,000 cut" },
+                { label: "xAI Raises $6B", url: "https://techcrunch.com", text: "Valuation boost" },
+                { label: "Meta VR Headset", url: "https://techcrunch.com", text: "New release" },
+                { label: "Amazon AWS Outage", url: "https://techcrunch.com", text: "Cloud chaos" },
+                { label: "Apple AI Push", url: "https://techcrunch.com", text: "Siri 2.0" },
+                { label: "Microsoft Teams Update", url: "https://techcrunch.com", text: "New features" },
+                { label: "Tesla Cybertruck Delay", url: "https://techcrunch.com", text: "Pushed to 2026" },
+                { label: "Stripe IPO Rumors", url: "https://techcrunch.com", text: "Fintech buzz" },
+                { label: "Netflix Ad Tier", url: "https://techcrunch.com", text: "Cheaper plans" },
+                { label: "Uber Eats Expansion", url: "https://techcrunch.com", text: "New markets" }
+            ];
+
+            const hiringData = [
+                { label: "Google SWE", url: "https://www.linkedin.com/jobs", text: "Remote" },
+                { label: "Amazon SDE", url: "https://www.linkedin.com/jobs", text: "Seattle" },
+                { label: "Meta PM", url: "https://www.linkedin.com/jobs", text: "Hybrid" },
+                { label: "Netflix SRE", url: "https://www.linkedin.com/jobs", text: "Bay Area" },
+                { label: "Microsoft Dev", url: "https://www.linkedin.com/jobs", text: "Redmond" },
+                { label: "Apple HW Eng", url: "https://www.linkedin.com/jobs", text: "Cupertino" },
+                { label: "Uber Data Sci", url: "https://www.linkedin.com/jobs", text: "NYC" },
+                { label: "Stripe Eng", url: "https://www.linkedin.com/jobs", text: "Remote" },
+                { label: "Airbnb Designer", url: "https://www.linkedin.com/jobs", text: "SF" },
+                { label: "Databricks ML", url: "https://www.linkedin.com/jobs", text: "Hybrid" }
+            ];
+
+            const discussionsData = [
+                { label: '"Passed Meta onsite, AMA"', url: "https://www.reddit.com/r/cscareerquestions", text: "↑1.5k 💬420" },
+                { label: '"Google prep in 3 months"', url: "https://www.reddit.com/r/cscareerquestions", text: "↑980 💬210" },
+                { label: '"FAANG worth it in 2025?"', url: "https://www.reddit.com/r/cscareerquestions", text: "↑876 💬204" },
+                { label: '"Amazon PIP horror"', url: "https://www.reddit.com/r/cscareerquestions", text: "↑1.2k 💬300" },
+                { label: '"Netflix interview tips"', url: "https://www.reddit.com/r/cscareerquestions", text: "↑750 💬180" },
+                { label: '"Microsoft vs Google pay"', url: "https://www.reddit.com/r/cscareerquestions", text: "↑600 💬150" },
+                { label: '"Uber layoffs incoming?"', url: "https://www.reddit.com/r/cscareerquestions", text: "↑500 💬120" },
+                { label: '"Stripe WFH policy"', url: "https://www.reddit.com/r/cscareerquestions", text: "↑450 💬90" },
+                { label: '"Airbnb vs Meta offer"', url: "https://www.reddit.com/r/cscareerquestions", text: "↑400 💬85" },
+                { label: '"Databricks worth it?"', url: "https://www.reddit.com/r/cscareerquestions", text: "↑350 💬70" }
+            ];
+
+            const companyData = [
+                { label: "Google", url: "https://www.glassdoor.com/Reviews/Google-Reviews-E9079.htm", text: "Innovative, fast-paced" },
+                { label: "Amazon", url: "https://www.glassdoor.com/Reviews/Amazon-Reviews-E6036.htm", text: "High-pressure, delivery" },
+                { label: "Meta", url: "https://www.glassdoor.com/Reviews/Meta-Reviews-E40772.htm", text: "Creative, social impact" },
+                { label: "Netflix", url: "https://www.glassdoor.com/Reviews/Netflix-Reviews-E11891.htm", text: "Freedom, high pay" },
+                { label: "Microsoft", url: "https://www.glassdoor.com/Reviews/Microsoft-Reviews-E1651.htm", text: "Stable, balanced" },
+                { label: "Apple", url: "https://www.glassdoor.com/Reviews/Apple-Reviews-E1138.htm", text: "Secretive, innovative" },
+                { label: "Uber", url: "https://www.glassdoor.com/Reviews/Uber-Reviews-E575263.htm", text: "Fast, chaotic" },
+                { label: "Stripe", url: "https://www.glassdoor.com/Reviews/Stripe-Reviews-E671923.htm", text: "Tech-first, remote" },
+                { label: "Airbnb", url: "https://www.glassdoor.com/Reviews/Airbnb-Reviews-E391850.htm", text: "Creative, travel" },
+                { label: "Databricks", url: "https://www.glassdoor.com/Reviews/Databricks-Reviews-E954774.htm", text: "Data-driven, growing" }
+            ];
+
+            function populateSection(sectionId, data, isBarChart = false) {
+                const contentDiv = document.getElementById(`${sectionId}-content`);
+                contentDiv.innerHTML = '';
+
+                data.forEach(item => {
+                    const html = isBarChart
+                        ? `
+                            <div class="list-item">
+                                <div class="list-label"><a href="${item.url}" target="_blank">${item.label}</a></div>
+                                <div class="micro-bar" data-value="${item.value}"><div class="micro-bar-fill"></div></div>
+                                <span class="list-value">${sectionId === 'salary' ? `$${item.value}k` : `${item.value}%`}</span>
+                            </div>
+                        `
+                        : `
+                            <div class="tile-item">
+                                <a href="${item.url}" target="_blank">${item.label}</a> - ${item.text}
+                            </div>
+                        `;
+                    contentDiv.innerHTML += html;
+                });
+                if (isBarChart) updateMicroBars(sectionId);
+            }
+
+            function updateMicroBars(sectionId) {
+                const contentDiv = document.getElementById(`${sectionId}-content`);
+                const bars = contentDiv.querySelectorAll('.micro-bar');
+                const values = Array.from(bars).map(bar => parseFloat(bar.getAttribute('data-value') || 0));
+                const maxValue = Math.max(...values);
+
+                bars.forEach(bar => {
+                    const value = parseFloat(bar.getAttribute('data-value') || 0);
+                    const fill = bar.querySelector('.micro-bar-fill');
+                    const width = maxValue ? (value / maxValue) * 100 : 0;
+                    fill.style.width = `${width}%`;
+                });
+            }
+
+            function refreshSection(sectionId, data, isBarChart = false) {
+                const contentDiv = document.getElementById(`${sectionId}-content`);
+                contentDiv.style.opacity = '0.5';
+                setTimeout(() => {
+                    populateSection(sectionId, data, isBarChart);
+                    contentDiv.style.opacity = '1';
+                }, 500); // Faster fade for snappy feel
+            }
+
+            // Initial population
+            populateSection('salary', salaryData, true);
+            populateSection('tech', techData, true);
+            populateSection('comp', compData);
+            populateSection('interview', interviewData);
+            populateSection('news', newsData);
+            populateSection('hiring', hiringData);
+            populateSection('discussions', discussionsData);
+            populateSection('company', companyData);
+
+            // Refresh buttons
+            document.querySelectorAll('.refresh-icon').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const sectionId = e.target.closest('.tile').querySelector('[id^="refresh-"]').id.replace('refresh-', '');
+                    const dataMap = {
+                        'salary': [salaryData, true],
+                        'tech': [techData, true],
+                        'comp': [compData, false],
+                        'interviews': [interviewData, false],
+                        'news': [newsData, false],
+                        'hiring': [hiringData, false],
+                        'discussions': [discussionsData, false],
+                        'companies': [companyData, false]
+                    };
+                    const [data, isBarChart] = dataMap[sectionId];
+                    refreshSection(sectionId, data, isBarChart);
+                });
+            });
+
+            // Hourly auto-refresh
+            setInterval(() => {
+                refreshSection('salary', salaryData, true);
+                refreshSection('tech', techData, true);
+                refreshSection('comp', compData);
+                refreshSection('interview', interviewData);
+                refreshSection('news', newsData);
+                refreshSection('hiring', hiringData);
+                refreshSection('discussions', discussionsData);
+                refreshSection('company', companyData);
+            }, 3600000);
+
+            // Theme toggle
+            const themeToggle = document.getElementById('theme-toggle');
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('light-mode');
+                themeToggle.textContent = document.body.classList.contains('light-mode') ? '🌙' : '☀️';
+            });
+
+            // Notifications
+            const notificationsIcon = document.getElementById('notifications-icon');
+            const notificationsContainer = document.getElementById('notifications');
+            notificationsIcon.addEventListener('click', () => {
+                notificationsContainer.innerHTML = `
+                    <div class="notification">New job posting: Google SWE L4</div>
+                    <div class="notification">Tech news: xAI announcement</div>
+                    <div class="notification">Interview shared: Amazon SDE</div>
+                `;
+            });
+
+            // Search
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.toLowerCase();
+                document.querySelectorAll('.list-item, .tile-item').forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    item.style.display = text.includes(query) ? '' : 'none';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
